@@ -74,7 +74,7 @@ function checkIfWordIsReal(word) {
     // make an AJAX call to the Pearson API
     $.ajax({
         // TODO 13 what should the url be?
-        url: "www.todo13.com",
+        url: "http://api.pearson.com/v2/dictionaries/entries",
         success: function(response) {
             console.log("We received a response from Pearson!");
 
@@ -112,10 +112,7 @@ function render() {
 
     // update the score on the scoreboard
     $("#current-score").text(currentScore());
-
-    // TODO 2
-    // Update the curent time remaining on the scoreboard.
-
+    $("#time-remaining").text(model.secondsRemaining);
 
     // if the game has not started yet, just hide the #game container and exit
     if (model.gameHasStarted == false) {
@@ -145,8 +142,7 @@ function render() {
 
     // Set the value of the textbox
     $("#textbox").val(model.currentAttempt);
-    // TODO 3
-    // Give focus to the textbox.
+    $("#textbox").focus();
 
 
     // if the current word attempt contains disallowed letters,

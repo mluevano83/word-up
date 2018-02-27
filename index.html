@@ -3,18 +3,10 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Word Up!</title>
-
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-2.2.3.js"></script>
-
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css" integrity="sha384-2hfp1SzUoho7/TsGGGDaFdsuuDL0LX2hnUp6VkX3CUQ2K4K+xjboZdsXyp4oUHZj" crossorigin="anonymous">
-
-    <!-- our CSS -->
     <link rel="stylesheet" href="css/styles.css"/>
-
 </head>
 <body>
 
@@ -41,21 +33,14 @@
                 </div>
             </div>
 
-            <!-- TODO 1
-            Make a "New Game" button
-            -->
+                <div><button class='btn btn-block btn-primary' id="new-game-button">New Game</button></div>
         </section>
 
         <!-- things that should not show up until the (first) game has started -->
         <section id="game">
 
-            <!-- TODO 4
-            Add some instructions so the user knows what to do.
-            -->
-
-            <!-- TODO 5
-            Make an empty container to hold the letter chips.
-            -->
+           <p>Spell as many words as you can, using only these letters:</p>
+           <div id="allowed-letters"></div>
 
             <!-- the form via which the user attempts to submit new words -->
             <form id="word-attempt-form">
