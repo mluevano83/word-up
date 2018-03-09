@@ -40,6 +40,16 @@ main {
     margin-left: 0.4em;
 }
 
+.red-back {
+    background-color: #d9534f;
+    color: white;
+}
+
+.blue-back {
+    background-color: #4285F4;
+    color: white;
+}
+
 .word-submission {
     font-size: 30px;
     color: orange;

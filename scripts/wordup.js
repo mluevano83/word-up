@@ -1,27 +1,18 @@
-
-
 // ----------------- MODEL -----------------
-
 var GAME_DURATION = 60;
-
 // all the stuff we need to keep track of
 var model = {
     // a boolean indicating whether the (first) game has started yet
     gameHasStarted: false,
-
     // how much time is left in the current game
     secondsRemaining: GAME_DURATION,
-
     // a list of the 7 letters that the player is allowed to use
     allowedLetters: [],
-
     // the word that the user is currently typing
     currentAttempt: "",
-
     // a list of the words the user has previously submitted in the current game
     wordSubmissions: []
 }
-
 /*
  * Resets the model to a starting state, and then starts the timer
  */
@@ -34,15 +25,12 @@ function startGame() {
     model.currentAttempt = "";
     model.timer = startTimer();
 }
-
 /*
  * Wraps things up
  */
 function endGame() {
     stopTimer();
 }
-
-
 /**
  * Given a word, adds a new wordSubmission to model.wordSubmissions.
  *
@@ -53,8 +41,12 @@ function addNewWordSubmission(word) {
     // Do we already have a wordSubmission with this word?
     // TODO 21
     // replace the hardcoded 'false' with the real answer
-    var alreadyUsed = false;
-
+    var alreadyUsed = false
+    for (i = 0; i <model.wordSubmissions.length; i++)
+        if (model.wordSubmissions[i].word == word) {
+            alreadyUsed = true;
+            break;
+        }
     // if the word is valid and hasn't already been used, add it
     if (containsOnlyAllowedLetters(word) && alreadyUsed == false) {
         model.wordSubmissions.push({ word: word });
@@ -62,7 +54,6 @@ function addNewWordSubmission(word) {
         checkIfWordIsReal(word);
     }
 }
-
 /**
  * Given a word, checks to see if that word actually exists in the dictionary.
  *
@@ -70,27 +61,27 @@ function addNewWordSubmission(word) {
  * the corresponding wordSubmission in the model, and then re-renders.
  */
 function checkIfWordIsReal(word) {
-
+    var params = {
+        headword : word,
+    }
     // make an AJAX call to the Pearson API
     $.ajax({
-        // TODO 13 what should the url be?
-        url: "http://api.pearson.com/v2/dictionaries/entries",
+        url: "http://api.pearson.com/v2/dictionaries/ldoce5/entries",
+        data : params,
         success: function(response) {
-            console.log("We received a response from Pearson!");
-
             // let's print the response to the console so we can take a looksie
             console.log(response);
 
-            // TODO 14
-            // Replace the 'true' below.
-            // If the response contains any results, then the word is legitimate.
-            // Otherwise, it is not.
-            var theAnswer = true;
-
-            // TODO 15
-            // Update the corresponding wordSubmission in the model
-
-
+            var theAnswer = false;
+            if (response.results.length == 0) {
+                theAnswer = false;
+            }
+                else {
+                theAnswer = true;
+                }
+            model.wordSubmissions.forEach(function(obj) {
+                if (obj.word == word)
+                obj.isRealWord = theAnswer})
             // re-render
             render();
         },
@@ -99,17 +90,12 @@ function checkIfWordIsReal(word) {
         }
     });
 }
-
-
 // ----------------- VIEW -----------------
-
 /**
  * Updates everything on screen based on the current state of the model
  */
 function render() {
-
     // PREGAME ---------------------------------
-
     // update the score on the scoreboard
     $("#current-score").text(currentScore());
     $("#time-remaining").text(model.secondsRemaining);
@@ -119,28 +105,24 @@ function render() {
         $("#game").hide();
         return;
     }
-
     // GAME -------------------------------------
 
     // clear stuff
+    $("#textbox").removeClass("bad-attempt");
+    $("#red-chips").empty();
     $("#allowed-letters").empty();
     $("#word-submissions").empty();
-    // TODO 10
-    // Add a few things to the above code block (underneath "// clear stuff").
 
-
-    // reveal the #game container
     $("#game").show();
 
     // render the letter tiles
     var letterChips = model.allowedLetters.map(letterChip)
     $("#allowed-letters").append(letterChips);
 
-    // TODO 11
-    // Render the word submissions
-
-
-    // Set the value of the textbox
+    var wordChips = model.wordSubmissions.map(wordSubmissionChip)
+    $("#word-submissions").append(wordChips)
+    
+    //Set the value of the textbox
     $("#textbox").val(model.currentAttempt);
     $("#textbox").focus();
 
@@ -153,22 +135,16 @@ function render() {
 
         // show the disallowed letters underneath
         var redLetterChips = disallowedLetters.map(disallowedLetterChip);
-
-        // TODO 8
-        // append the red letter chips to the form
-
+        $("#red-chips").append(redLetterChips);
     }
 
     // if the game is over
     var gameOver = model.secondsRemaining <= 0
     if (gameOver) {
-        // TODO 9
-        // disable the text box and clear its contents
-
+        $("#textbox").attr("disabled", true);
+        $("#textbox").val("");
     }
 }
-
-
 /**
  * Given a letter, returns an HTML element which can be used to display
  * the letter as a large "chip" above the text box
@@ -198,21 +174,23 @@ function wordSubmissionChip(wordSubmission) {
 
     // if we know the status of this word (real word or not), then add a green score or red X
     if (wordSubmission.hasOwnProperty("isRealWord")) {
-        var scoreChip = $("<span></span>").text("⟐");
-        // TODO 17
-        // give the scoreChip appropriate text content
-
-        // TODO 18
-        // give the scoreChip appropriate css classes
-
-        // TODO 16
-        // append scoreChip into wordChip
-
+            if (wordSubmission.isRealWord == true) {
+                content = wordScore(wordSubmission.word);
+            }
+                else {
+                    content = "X"
+                }
+        var scoreChip = $("<span></span>").text(content)
+        if (wordSubmission.isRealWord == false) {
+            scoreChip.addClass("tag-sm red-back");
+        }
+            else {
+                scoreChip.addClass("tag-sm blue-back")
+            }
+        wordChip.append(scoreChip);
     }
-
     return wordChip;
 }
-
 /**
  * Given a disallowed letter, returns a DOM element to display the letter
  * little red chip to display the letter
@@ -222,24 +200,20 @@ function disallowedLetterChip(letter) {
         .text(letter)
         .addClass("tag tag-sm tag-danger disallowed-letter");
 }
-
-
 // ----------------- DOM EVENT HANDLERS -----------------
-
 $(document).ready(function() {
     // when the new game button is clicked
     $("#new-game-button").click(function() {
         // start the game and re-render
         startGame();
+        $("#textbox").attr("disabled", false);
         render();
     });
 
-    // TODO 6
-    // Add another event handler with a callback function.
-    // When the textbox content changes,
-    // update the .currentAttempt property of the model and re-render
-
-
+    $("#textbox").on("input", function() {
+        model.currentAttempt = $("#textbox").val();
+        render();
+    });
     // when the form is submitted
     $("#word-attempt-form").submit(function(evt) {
         // we don't want the page to refresh
@@ -273,11 +247,16 @@ var scrabblePointsForEachLetter = {
  * meaning it is not a member of the .allowedLetters list from the current model
  */
 function isDisallowedLetter(letter) {
-    // TODO 7
-    // This should return true if the letter is not an element of
-    // the .allowedLetters list in the model
-    return false;
-}
+    var allowedLetters = model.allowedLetters;
+    var isAllowed = allowedLetters.indexOf(letter)
+    
+    if (isAllowed < 0) {
+        return true;
+    }
+    else {
+        return false;
+    };
+};
 
 /**
  * Given a word, returns a list of all the disallowed letters in that word
@@ -293,11 +272,14 @@ function disallowedLettersInWord(word) {
  * i.e. the word does not contain any disallowed letters
  */
 function containsOnlyAllowedLetters(word) {
-    // TODO 12
-    // Return the actual answer.
-    return true;
+    var badLetters = disallowedLettersInWord(word)
+    if (badLetters.length > 0) {
+        return false;
+    }
+        else {
+        return true;
+        }
 }
-
 /**
  * Returns a list of 7 randomly chosen letters
  * Each letter will be distinct (no repeats of the same letter)
@@ -322,17 +304,10 @@ function letterScore(letter) {
 function wordScore(word) {
     // split the word into a list of letters
     var letters = word.split("");
-
-    // TODO 19
-    // Replace the empty list below.
-    // Map the list of letters into a list of scores, one for each letter.
-    var letterScores = [];
-
+    var letterScores = letters.map(letterScore)
     // return the total sum of the letter scores
     return letterScores.reduce(add, 0);
 }
-
-
 /**
  * Returns the user's current total score, which is the sum of the
  * scores of all the wordSubmissions whose word is a real dictionary word
@@ -347,10 +322,7 @@ function currentScore() {
             return 0;
         }
     });
-
-    // TODO 20
-    // return the total sum of the word scores
-    return 0;
+    return wordScores.reduce(add, 0);
 }
 
 
